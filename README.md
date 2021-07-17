@@ -1,1 +1,1 @@
-# sgw
+# Spread God's Word
