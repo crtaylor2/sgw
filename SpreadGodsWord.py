@@ -1,12 +1,45 @@
 import argparse
+import json
 
 class LanguageAction(argparse.Action):
+    def languagesAsJson():
+        #get file object
+        f = open("languages.txt")
+        langs = []
+        while(True):
+	        line = f.readline()
+	        if not line:
+		        break
+	        langs.append(line.strip())
+        f.close
+        
+        langs.sort()
+        json_str = json.dumps(langs)
+        print (json_str)
+
     def __call__(self, parser, namespace, values, option_string=None):
-        print("TODO SHOW LANGUAGES")
+        LanguageAction.languagesAsJson()
+
 
 class TranslationAction(argparse.Action):
+    def translationsAsJson():
+        #get file object
+        f = open("translations.txt")
+        transl = []
+        while(True):
+	        line = f.readline()
+	        if not line:
+		        break
+	        transl.append(line.strip())
+        f.close
+        
+        transl.sort()
+        json_str = json.dumps(transl)
+        print (json_str)
+
     def __call__(self, parser, namespace, values, option_string=None):
-        print("TODO SHOW TRANSLATIONS")
+       TranslationAction.translationsAsJson()
+
 
 def parseArguments():
     parser = argparse.ArgumentParser()
