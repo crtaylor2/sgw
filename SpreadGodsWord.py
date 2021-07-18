@@ -12,9 +12,10 @@ class LanguageAction(argparse.Action):
 		        break
 	        langs.append(line.strip())
         f.close
-        
+        langs_dict = dict()
+        langs_dict["languages"] = langs
         langs.sort()
-        json_str = json.dumps(langs)
+        json_str = json.dumps(langs_dict)
         print (json_str)
 
     def __call__(self, parser, namespace, values, option_string=None):
@@ -25,16 +26,25 @@ class TranslationAction(argparse.Action):
     def translationsAsJson():
         #get file object
         f = open("translations.txt")
-        transl = []
+        transDict = dict()
         while(True):
 	        line = f.readline()
 	        if not line:
 		        break
-	        transl.append(line.strip())
+	        line = line.strip()
+	        lang = line.split(':')[0].strip()
+	        trans = line.split(':')[1].strip()
+	        print(lang + "=>" + trans)
+	        if lang in transDict:
+	            list = transDict[lang]
+	        else:
+	            list = []
+	        list.append(trans)
+	        transDict[lang] = list
         f.close
-        
-        transl.sort()
-        json_str = json.dumps(transl)
+        yet_another_dict = dict()
+        yet_another_dict["translations"] = transDict
+        json_str = json.dumps(yet_another_dict)
         print (json_str)
 
     def __call__(self, parser, namespace, values, option_string=None):
