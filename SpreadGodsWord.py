@@ -1,5 +1,6 @@
 import argparse
 import json
+import flask
 
 class LanguageAction(argparse.Action):
     def languagesAsJson():
@@ -16,10 +17,10 @@ class LanguageAction(argparse.Action):
         langs_dict["languages"] = langs
         langs.sort()
         json_str = json.dumps(langs_dict)
-        print (json_str)
+        return json_str
 
     def __call__(self, parser, namespace, values, option_string=None):
-        LanguageAction.languagesAsJson()
+        print(LanguageAction.languagesAsJson())
 
 
 class TranslationAction(argparse.Action):
@@ -52,16 +53,31 @@ class TranslationAction(argparse.Action):
         yet_another_dict = dict()
         yet_another_dict["translations"] = transDict
         json_str = json.dumps(yet_another_dict)
-        print (json_str)
+        return json_str
 
     def __call__(self, parser, namespace, values, option_string=None):
-       TranslationAction.translationsAsJson()
+       print(TranslationAction.translationsAsJson())
+
+app = flask.Flask(__name__)
+
+class ServerAction(argparse.Action):
+    @app.route('/languages')
+    def languages():
+        return LanguageAction.languagesAsJson()
+
+    @app.route('/translations')
+    def translations():
+        return TranslationAction.translationsAsJson()
+
+    def __call__(self, parser, namespace, values, option_string=None):
+       app.run(debug=True)
 
 
 def parseArguments():
     parser = argparse.ArgumentParser()
     parser.add_argument('-l', '--languages', action=LanguageAction, nargs=0, help='show languages supported and exit')
     parser.add_argument('-t', '--translations', action=TranslationAction, nargs=0, help='show translations supported and exit')
+    parser.add_argument('-s', '--server', action=ServerAction, nargs=0, help='run as a REST server')
     args = parser.parse_args()
 
 def main():
