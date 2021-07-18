@@ -52,7 +52,7 @@ class LanguageAction(argparse.Action):
 # what translations are supported by this program?)
 ######################################################################
 class TranslationAction(argparse.Action):
-    def translationsAsJson():
+    def translationsAsJson(langauge_filter=None):
         #get file object
         f = open("translations.txt")
         transDict = dict()
@@ -75,8 +75,9 @@ class TranslationAction(argparse.Action):
 	        another_dict["language"] = lang
 	        another_dict["name"] = trans
 	        another_dict["abbreviation"] = abbr
-	        list.append(another_dict)
-	        transDict[lang] = list
+	        if langauge_filter is None or (langauge_filter is not None and langauge_filter.lower() == lang.lower()):
+	            list.append(another_dict)
+	            transDict[lang] = list
         f.close
         yet_another_dict = dict()
         yet_another_dict["translations"] = transDict
@@ -84,7 +85,7 @@ class TranslationAction(argparse.Action):
         return json_str
 
     def __call__(self, parser, namespace, values, option_string=None):
-       print(TranslationAction.translationsAsJson())
+        print(TranslationAction.translationsAsJson(values))
 
 ######################################################################
 # This class performs the HTTP server actions for the program
@@ -95,8 +96,12 @@ class ServerAction(argparse.Action):
         return LanguageAction.languagesAsJson()
 
     @app.route('/translations')
-    def translations():
-        return TranslationAction.translationsAsJson()
+    def translationsAll():
+        return TranslationAction.translationsAsJson(None)
+
+    @app.route('/translations/<string:language>')
+    def translationsFiltered(language):
+        return TranslationAction.translationsAsJson(language)
 
     def __call__(self, parser, namespace, values, option_string=None):
        app.run(debug=False)
@@ -109,10 +114,10 @@ class ServerAction(argparse.Action):
 class SpreadGodsWord:
     def parseArguments():
         parser = argparse.ArgumentParser()
-        parser.add_argument('-l', '--languages', action=LanguageAction, nargs=0,
+        parser.add_argument('-l', '--print-supported-languages', action=LanguageAction, nargs=0,
             help='show languages supported and exit')
-        parser.add_argument('-t', '--translations', action=TranslationAction, nargs=0,
-            help='show translations supported and exit')
+        parser.add_argument('-t', '--print-supported-translations', action=TranslationAction, nargs='?',
+            default=None, help='show translations supported and exit')
         parser.add_argument('-s', '--server', action=ServerAction, nargs=0,
             help='run as a REST server')
         args = parser.parse_args()
