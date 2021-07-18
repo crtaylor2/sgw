@@ -19,6 +19,7 @@
 import argparse
 import json
 import flask
+import requests
 
 app = flask.Flask(__name__)
 
@@ -88,6 +89,23 @@ class TranslationAction(argparse.Action):
     def __call__(self, parser, namespace, values, option_string=None):
         print(TranslationAction.translationsAsJson(values))
 
+
+######################################################################
+# This class allows the user to look up a verse reference.
+######################################################################
+class ReferenceAction(argparse.Action):
+    def referencesAsJson(reference):
+        url = 'https://getbible.net/json?passage=' + reference[0]
+        response = requests.get(url)
+        if response.ok:
+            return response.text
+        else:
+            return None
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(ReferenceAction.referencesAsJson(values))
+
+
 ######################################################################
 # This class performs the HTTP server actions for the program
 ######################################################################
@@ -108,6 +126,12 @@ class ServerAction(argparse.Action):
     def translationsFiltered(language):
         return TranslationAction.translationsAsJson(language)
 
+    @app.route('/references/<string:reference>')
+    def references(reference):
+        reflist = []
+        reflist.append(reference)
+        return ReferenceAction.referencesAsJson(reflist)
+
     def __call__(self, parser, namespace, values, option_string=None):
        app.run(debug=False)
 
@@ -124,6 +148,8 @@ class SpreadGodsWord:
         parser.add_argument('-t', '--print-supported-translations', action=TranslationAction, nargs='?',
             default=None, help='show translations supported and exit')
         parser.add_argument('-s', '--server', action=ServerAction, nargs=0,
+            help='run as a REST server')
+        parser.add_argument('-r', '--reference', action=ReferenceAction, nargs=1,
             help='run as a REST server')
         args = parser.parse_args()
 
