@@ -99,7 +99,7 @@ class ServerAction(argparse.Action):
         return TranslationAction.translationsAsJson()
 
     def __call__(self, parser, namespace, values, option_string=None):
-       app.run(debug=True)
+       app.run(debug=False)
 
 
 ######################################################################
