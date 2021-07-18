@@ -34,12 +34,19 @@ class TranslationAction(argparse.Action):
 	        line = line.strip()
 	        lang = line.split(':')[0].strip()
 	        trans = line.split(':')[1].strip()
-	        print(lang + "=>" + trans)
+	        left = trans.rindex('(')+1
+	        right = trans.rindex(')')
+	        abbr = trans[left:right]
+	        trans = trans[:left-1].strip()
 	        if lang in transDict:
 	            list = transDict[lang]
 	        else:
 	            list = []
-	        list.append(trans)
+	        another_dict = {}
+	        another_dict["language"] = lang
+	        another_dict["name"] = trans
+	        another_dict["abbreviation"] = abbr
+	        list.append(another_dict)
 	        transDict[lang] = list
         f.close
         yet_another_dict = dict()
