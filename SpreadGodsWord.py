@@ -20,6 +20,7 @@ import argparse
 import json
 import flask
 import requests
+import sys
 
 app = flask.Flask(__name__)
 
@@ -40,8 +41,8 @@ class LanguageAction(argparse.Action):
 	            langs.append(line.strip())
         f.close
         langs_dict = dict()
-        langs_dict["languages"] = langs
         langs.sort()
+        langs_dict["languages"] = langs
         json_str = json.dumps(langs_dict)
         return json_str
 
@@ -94,8 +95,10 @@ class TranslationAction(argparse.Action):
 # This class allows the user to look up a verse reference.
 ######################################################################
 class ReferenceAction(argparse.Action):
-    def referencesAsJson(reference):
+    def referencesAsJson(reference, translation):
         url = 'https://getbible.net/json?passage=' + reference[0]
+        if translation is not None:
+            url = url + '&version=' + translation[0]
         response = requests.get(url)
         if response.ok:
             return response.text
@@ -103,7 +106,16 @@ class ReferenceAction(argparse.Action):
             return None
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print(ReferenceAction.referencesAsJson(values))
+        nextIsTranslation = False
+        transList = None
+        for arg in sys.argv:
+            if nextIsTranslation:
+                transList = []
+                transList.append(arg)
+                break
+            if arg == '-v' or arg == '--version':
+                nextIsTranslation = True
+        print(ReferenceAction.referencesAsJson(values, transList))
 
 
 ######################################################################
@@ -130,7 +142,15 @@ class ServerAction(argparse.Action):
     def references(reference):
         reflist = []
         reflist.append(reference)
-        return ReferenceAction.referencesAsJson(reflist)
+        return ReferenceAction.referencesAsJson(reflist, None)
+
+    @app.route('/references/<string:reference>/<string:translation>')
+    def refsTrans(reference, translation):
+        reflist = []
+        reflist.append(reference)
+        translist = []
+        translist.append(translation)
+        return ReferenceAction.referencesAsJson(reflist, translist)
 
     def __call__(self, parser, namespace, values, option_string=None):
        app.run(debug=False)
@@ -150,7 +170,9 @@ class SpreadGodsWord:
         parser.add_argument('-s', '--server', action=ServerAction, nargs=0,
             help='run as a REST server')
         parser.add_argument('-r', '--reference', action=ReferenceAction, nargs=1,
-            help='run as a REST server')
+            help='specify reference')
+        parser.add_argument('-v', '--version', action=None, nargs=1,
+            help='specify versions')
         args = parser.parse_args()
 
     def main():
