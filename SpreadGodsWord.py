@@ -1,8 +1,8 @@
 ######################################################################
 #
 # Cariessa Taylor
-# July 17, 2021
-# CSIS 483 Phase 1
+# July 26, 2021
+# CSIS 483 Phase 2
 #
 # This project serves as a platform to retreive the scriptures in
 # various languages and translations. This program can run in two
