@@ -1,5 +1,19 @@
 #!/bin/env bash
 
+######################################################################
+#
+# Cariessa Taylor
+# July 26, 2021
+# CSIS 483 Phase 2
+#
+# This bash script is an automated test for the Spread God's Word
+# program. It tests both the command line interface and REST
+# interface.
+#
+# For more details, see the README.md file.
+#
+######################################################################
+
 # Test Command Line - Languages
 langs_cli=$(python SpreadGodsWord.py --print-supported-languages)
 langs_cli_pass=0
