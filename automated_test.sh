@@ -64,8 +64,23 @@ else
 fi
 echo ""
 
-#python SpreadGodsWord.py --reference gen1:1
-#python SpreadGodsWord.py --reference Acts15:1-5,10,15 --version aov
+gen1_1_cli=$(python SpreadGodsWord.py --reference gen1:1)
+if [[ "$gen1_1_cli" =~ .*"In the beginning God created the heaven and the earth".* ]]
+then
+    echo "PASS (command line): found verse for Genesis 1:1"
+else
+    echo "FAIL (command line): didn't find verse for Genesis 1:1"
+    exit 1
+fi
+act15_1_cli=$(python SpreadGodsWord.py --reference Acts15:1-5,10,15)
+if [[ "$act15_1_cli" =~ .*"And certain men which came down from Judaea taught the brethren, and said, Except ye be circumcised after the manner of Moses, ye cannot be saved.".* ]]
+then
+    echo "PASS (command line): found verse for Acts 15:1"
+else
+    echo "FAIL (command line): didn't find verse for Acts 15:1"
+    exit 1
+fi
+echo ""
 
 # Start REST Service
 echo "Starting REST server..."
@@ -123,5 +138,22 @@ else
 fi
 echo ""
 
-#curl http://localhost:5000/references/gen1:1
-#curl http://localhost:5000/references/Acts15:1-5,10,15/aov
+gen1_1_cli=$(curl -s http://localhost:5000/references/gen1:1)
+if [[ "$gen1_1_cli" =~ .*"In the beginning God created the heaven and the earth".* ]]
+then
+    echo "PASS (rest): found verse for Genesis 1:1"
+else
+    echo "FAIL (rest): didn't find verse for Genesis 1:1"
+    exit 1
+fi
+act15_1_cli=$(curl -s http://localhost:5000/references/Acts15:1-5,10,15)
+if [[ "$act15_1_cli" =~ .*"And certain men which came down from Judaea taught the brethren, and said, Except ye be circumcised after the manner of Moses, ye cannot be saved.".* ]]
+then
+    echo "PASS (rest): found verse for Acts 15:1"
+else
+    echo "FAIL (rest): didn't find verse for Acts 15:1"
+    exit 1
+fi
+echo ""
+
+echo "SUCCESS! ALL TESTS PASSED!"
