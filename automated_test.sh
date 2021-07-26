@@ -35,6 +35,7 @@ then
     echo "Found all $langs_cli_pass languages for command line"
 else
     echo "Did not find $langs_cli_fail languages for command line"
+    exit $langs_cli_fail
 fi
 echo ""
 
@@ -59,6 +60,7 @@ then
     echo "Found translations for all $trans_cli_pass languages for command line"
 else
     echo "Did not find translations for $trans_cli_fail languages for command line"
+    exit $trans_cli_fail
 fi
 echo ""
 
@@ -92,6 +94,7 @@ then
     echo "Found all $langs_cli_pass languages for rest"
 else
     echo "Did not find $langs_cli_fail languages for rest"
+    exit $langs_cli_fail
 fi
 echo ""
 
@@ -116,6 +119,7 @@ then
     echo "Found translations for all $trans_cli_pass languages for rest"
 else
     echo "Did not find translations for $trans_cli_fail languages for rest"
+    exit $trans_cli_fail
 fi
 echo ""
 
