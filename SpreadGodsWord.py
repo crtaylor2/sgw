@@ -157,6 +157,37 @@ class ReferenceAction(argparse.Action):
 
 
 ######################################################################
+# This class performs concordance actions for the program
+######################################################################
+class ConcordanceAction(argparse.Action):
+    # TODO: Support concordance in multiple translations
+    # TODO: "Cache" results of the bible so we only download once per translation
+    # TODO: Automated tests
+    # TODO: HTML route for concordance
+    # TODO: UI - search box for concordance
+    # TODO: undo changes to books.txt
+
+    def concordancesAsJson(anyWord):
+        f = open("books.txt")
+        while(True):
+            book = f.readline()
+            if not book:
+                break
+            book = book.strip()
+            print("Downloading " + book + "...")
+            book_json = ReferenceAction.referencesAsJson(book, None)
+            # TODO 2. Parse the results
+            # a. pull our the actual text
+            # b. remove punctuation (, \r, \n, ", :, ;, basically anything that is not a-z A-Z 0-9")
+            # c. account for upper / lower case
+            # TODO 3. Hash it
+        f.close
+
+    def __call__(self, parser, namespace, values, option_string=None):
+        print(ConcordanceAction.concordancesAsJson(values))
+
+
+######################################################################
 # This class performs the HTTP server actions for the program
 ######################################################################
 class ServerAction(argparse.Action):
@@ -215,6 +246,8 @@ class SpreadGodsWord:
             help='specify reference')
         parser.add_argument('-v', '--version', action=None, nargs=1,
             help='specify versions')
+        parser.add_argument('-c', '--concordance', action=ConcordanceAction, nargs=1,
+            help= 'concordance')
         args = parser.parse_args()
 
     def main():
