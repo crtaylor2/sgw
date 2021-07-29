@@ -24,6 +24,44 @@ import sys
 
 app = flask.Flask(__name__)
 
+class HomePage:
+    def homePage():
+        html = "<html>"
+        html += "<head>"
+        html += "<title>Spread God's Word</title>"
+        html += "</head>"
+        html += "<body>"
+        html += "<h1>Spread God's Word</h1>"
+        html += "<hr>"
+        html += "<h2><a href=\"languages\">Languages</a><h2>"
+        html += "<h2><a href=\"translations\">Translations - All</a><h2>"
+        f = open("languages.txt")
+        html += "<h3>"
+        while(True):
+	        line = f.readline()
+	        if not line:
+		        break
+	        line = line.strip()
+	        html += "<a href=\"translations\\" + line + "\">[" + line + "</a>] "
+        html += "</h3>"
+        f.close
+        html += "<h2>Books of the Bible</h2>"
+        f = open("books.txt")
+        html += "<h3>"
+        while(True):
+	        line = f.readline()
+	        if not line:
+		        break
+	        line = line.strip()
+	        html += "<a href=\"references\\" + line + "\">[" + line + "</a>] "
+        html += "</h3>"
+        f.close
+        html += "<hr>"
+        html += "<address>Cariessa Taylor<br>July 26, 2021</address>"
+        html += "</body>"
+        html += "</html>"
+        return html
+
 ######################################################################
 # This class performs the actions for the language requests (i.e. what
 # languages are supported by this program?)
@@ -122,6 +160,10 @@ class ReferenceAction(argparse.Action):
 # This class performs the HTTP server actions for the program
 ######################################################################
 class ServerAction(argparse.Action):
+    @app.route('/')
+    def home():
+        return HomePage.homePage()
+
     @app.route('/languages')
     def languagesAll():
         return LanguageAction.languagesAsJson(None)
