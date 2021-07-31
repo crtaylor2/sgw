@@ -137,7 +137,7 @@ class ReferenceAction(argparse.Action):
     def referencesAsJson(reference, translation):
         url = 'https://getbible.net/json?passage=' + reference[0]
         if translation is not None:
-            url = url + '&version=' + translation[0]
+            url = url + '&version=' + translation
         response = requests.get(url)
         if response.ok:
             txt = response.text
@@ -150,15 +150,14 @@ class ReferenceAction(argparse.Action):
 
     def __call__(self, parser, namespace, values, option_string=None):
         nextIsTranslation = False
-        transList = None
+        translation = "kjv"
         for arg in sys.argv:
             if nextIsTranslation:
-                transList = []
-                transList.append(arg)
+                translation = arg
                 break
             if arg == '-v' or arg == '--version':
                 nextIsTranslation = True
-        print(ReferenceAction.referencesAsJson(values, transList))
+        print(ReferenceAction.referencesAsJson(values, translation))
 
 
 ######################################################################
@@ -173,11 +172,11 @@ class ConcordanceAction(argparse.Action):
     def concordancesAsJson(anyWords, translation):
         ConcordanceAction.buildConcordance(translation)
         wordList = anyWords[0].split(' ')
-        if wordList[0].lower() in concord:
-            answer = concord[wordList[0].lower()]
+        if wordList[0].lower() in concord[translation]:
+            answer = concord[translation][wordList[0].lower()]
             for i in range(1, len(wordList)):
-                if wordList[i].lower() in concord:
-                    answer = answer.intersection(concord[wordList[i].lower()])
+                if wordList[i].lower() in concord[translation]:
+                    answer = answer.intersection(concord[translation][wordList[i].lower()])
                 else:
                     answer = set()
             return str(answer)
@@ -185,6 +184,10 @@ class ConcordanceAction(argparse.Action):
             return "NULL"
 
     def buildConcordance(translation):
+        if translation in concord:
+            return
+        else:
+            concord[translation] = dict()
         f = open("books.txt")
         while(True):
             book = f.readline()
@@ -192,7 +195,7 @@ class ConcordanceAction(argparse.Action):
                 break
             book = book.strip()
             if translation is not None:
-                fname = os.path.join("cache", translation[0] + book + ".json")
+                fname = os.path.join("cache", translation + book + ".json")
             else:
                 fname = os.path.join("cache", book + ".json")
             if os.path.isfile(fname):
@@ -225,25 +228,24 @@ class ConcordanceAction(argparse.Action):
                         word = word.replace('(', '')
                         word = word.replace(')', '')
                         word = word.lower()
-                        if word in concord:
-                            concord[word].add(book + chapter_nr + ":" + verse_nr)
+                        if word in concord[translation]:
+                            concord[translation][word].add(book + chapter_nr + ":" + verse_nr)
                         else:
-                            concord[word] = set()
-                            concord[word].add(book + chapter_nr + ":" + verse_nr)
+                            concord[translation][word] = set()
+                            concord[translation][word].add(book + chapter_nr + ":" + verse_nr)
         f.close
-        print('The Bible has ' + str(len(concord.keys())) + ' words')
+        print('Loaded ' + translation + ', it has ' + str(len(concord[translation].keys())) + ' words')
 
     def __call__(self, parser, namespace, values, option_string=None):
         nextIsTranslation = False
-        transList = None
+        translation = "kjv"
         for arg in sys.argv:
             if nextIsTranslation:
-                transList = []
-                transList.append(arg)
+                translation = arg
                 break
             if arg == '-v' or arg == '--version':
                 nextIsTranslation = True
-        print(ConcordanceAction.concordancesAsJson(values, transList))
+        print(ConcordanceAction.concordancesAsJson(values, translation))
 
 
 ######################################################################
@@ -274,29 +276,25 @@ class ServerAction(argparse.Action):
     def references(reference):
         reflist = []
         reflist.append(reference)
-        return ReferenceAction.referencesAsJson(reflist, None)
+        return ReferenceAction.referencesAsJson(reflist, "kjv")
 
     @app.route('/references/<string:reference>/<string:translation>')
     def refsTrans(reference, translation):
         reflist = []
         reflist.append(reference)
-        translist = []
-        translist.append(translation)
-        return ReferenceAction.referencesAsJson(reflist, translist)
+        return ReferenceAction.referencesAsJson(reflist, translation)
 
     @app.route('/concordance/<string:anyWord>')
     def concordance(anyWord):
         wordlist = []
         wordlist.append(anyWord)
-        return ConcordanceAction.concordancesAsJson(wordlist, None)
+        return ConcordanceAction.concordancesAsJson(wordlist, "kjv")
 
     @app.route('/concordance/<string:anyWord>/<string:translation>')
     def concordTrans(anyWord, translation):
         wordlist = []
         wordlist.append(anyWord)
-        translist = []
-        translist.append(translation)
-        return ConcordanceAction.concordancesAsJson(wordlist, translist)
+        return ConcordanceAction.concordancesAsJson(wordlist, translation)
 
     def __call__(self, parser, namespace, values, option_string=None):
        app.run(debug=False)
