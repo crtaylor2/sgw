@@ -19,6 +19,7 @@
 import argparse
 import json
 import flask
+import os
 import requests
 import sys
 
@@ -186,10 +187,22 @@ class ConcordanceAction(argparse.Action):
             if not book:
                 break
             book = book.strip()
-            book_list = []
-            book_list.append(book)
-            print("Downloading " + book + "...")
-            book_json = ReferenceAction.referencesAsJson(book_list, translation)
+            if translation is not None:
+                fname = os.path.join("cache", translation[0] + book + ".json")
+            else:
+                fname = os.path.join("cache", book + ".json")
+            if os.path.isfile(fname):
+                r = open(fname)
+                book_json = r.readline()
+                r.close()
+            else:
+                book_list = []
+                book_list.append(book)
+                print("Downloading " + book + "...")
+                book_json = ReferenceAction.referencesAsJson(book_list, translation)
+                c = open(fname, "w")
+                c.write(book_json)
+                c.close()
             try:
                 parsed = json.loads(book_json)
             except json.decoder.JSONDecodeError:
@@ -213,7 +226,7 @@ class ConcordanceAction(argparse.Action):
         print('The Bible has ' + str(len(concord.keys())) + ' words')
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print(ConcordanceAction.concordancesAsJson(values))
+        print(ConcordanceAction.concordancesAsJson(values, None))
 
 
 ######################################################################
