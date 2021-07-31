@@ -170,10 +170,17 @@ class ConcordanceAction(argparse.Action):
     # TODO: Automated tests
     # TODO: UI - search box for concordance
 
-    def concordancesAsJson(anyWord, translation):
+    def concordancesAsJson(anyWords, translation):
         ConcordanceAction.buildConcordance(translation)
-        if anyWord[0] in concord:
-            return str(concord[anyWord[0].lower()])
+        wordList = anyWords[0].split(' ')
+        if wordList[0].lower() in concord:
+            answer = concord[wordList[0].lower()]
+            for i in range(1, len(wordList)):
+                if wordList[i].lower() in concord:
+                    answer = answer.intersection(concord[wordList[i].lower()])
+                else:
+                    answer = set()
+            return str(answer)
         else:
             return "NULL"
 
@@ -213,6 +220,10 @@ class ConcordanceAction(argparse.Action):
                         word = word.replace(',', '')
                         word = word.replace(';', '')
                         word = word.replace(':', '')
+                        word = word.replace('!', '')
+                        word = word.replace('?', '')
+                        word = word.replace('(', '')
+                        word = word.replace(')', '')
                         word = word.lower()
                         if word in concord:
                             concord[word].add(book + chapter_nr + ":" + verse_nr)
