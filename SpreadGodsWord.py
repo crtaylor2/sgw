@@ -139,7 +139,11 @@ class ReferenceAction(argparse.Action):
             url = url + '&version=' + translation[0]
         response = requests.get(url)
         if response.ok:
-            return response.text
+            txt = response.text
+            txt = txt.lstrip('(')
+            txt = txt.rstrip(';')
+            txt = txt.rstrip(')')
+            return txt
         else:
             return None
 
@@ -159,6 +163,8 @@ class ReferenceAction(argparse.Action):
 ######################################################################
 # This class performs concordance actions for the program
 ######################################################################
+concord = dict()
+
 class ConcordanceAction(argparse.Action):
     # TODO: Support concordance in multiple translations
     # TODO: "Cache" results of the bible so we only download once per translation
@@ -168,20 +174,49 @@ class ConcordanceAction(argparse.Action):
     # TODO: undo changes to books.txt
 
     def concordancesAsJson(anyWord):
+        ConcordanceAction.buildConcordance()
+        if anyWord[0] in concord:
+            return concord[anyWord[0].lower()]
+        else:
+            return None
+
+    def buildConcordance():
         f = open("books.txt")
         while(True):
             book = f.readline()
             if not book:
                 break
             book = book.strip()
+            book_list = []
+            book_list.append(book)
             print("Downloading " + book + "...")
-            book_json = ReferenceAction.referencesAsJson(book, None)
-            # TODO 2. Parse the results
-            # a. pull our the actual text
-            # b. remove punctuation (, \r, \n, ", :, ;, basically anything that is not a-z A-Z 0-9")
-            # c. account for upper / lower case
-            # TODO 3. Hash it
+            book_json = ReferenceAction.referencesAsJson(book_list, None)
+            parsed = json.loads(book_json)
+            #print(json.dumps(parsed, indent=4, sort_keys=True))
+            #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            #print(parsed["book_name"])
+            #print("@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@")
+            for chapter_nr in parsed["book"]:
+                #print(chapter_nr)
+                for verse_nr in parsed["book"][chapter_nr]["chapter"]:
+                    #print(verse_nr)
+                    verse = parsed["book"][chapter_nr]["chapter"][verse_nr]["verse"].strip()
+                    #print(verse)
+                    for word in verse.split(' '):
+                        #print(word)
+                        word = word.replace('.', '')
+                        word = word.replace(',', '')
+                        word = word.replace(';', '')
+                        word = word.replace(':', '')
+                        word = word.lower()
+                        if word in concord:
+                            concord[word].add(book + chapter_nr + ":" + verse_nr)
+                        else:
+                            concord[word] = set()
+                            concord[word].add(book + chapter_nr + ":" + verse_nr)
         f.close
+        #print(concord.keys())
+        print('the Bible has ' + str(len(concord.keys())) + ' words')
 
     def __call__(self, parser, namespace, values, option_string=None):
         print(ConcordanceAction.concordancesAsJson(values))
