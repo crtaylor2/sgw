@@ -167,11 +167,8 @@ class ReferenceAction(argparse.Action):
 concord = dict()
 
 class ConcordanceAction(argparse.Action):
-    # TODO: Support concordance in multiple translations from the command line
-    # TODO: "Cache" results of the bible so we only download once per translation
     # TODO: Automated tests
     # TODO: UI - search box for concordance
-    # TODO: undo changes to books.txt
 
     def concordancesAsJson(anyWord, translation):
         ConcordanceAction.buildConcordance(translation)
@@ -226,7 +223,16 @@ class ConcordanceAction(argparse.Action):
         print('The Bible has ' + str(len(concord.keys())) + ' words')
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print(ConcordanceAction.concordancesAsJson(values, None))
+        nextIsTranslation = False
+        transList = None
+        for arg in sys.argv:
+            if nextIsTranslation:
+                transList = []
+                transList.append(arg)
+                break
+            if arg == '-v' or arg == '--version':
+                nextIsTranslation = True
+        print(ConcordanceAction.concordancesAsJson(values, transList))
 
 
 ######################################################################
