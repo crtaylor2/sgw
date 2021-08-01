@@ -1,8 +1,8 @@
 ######################################################################
 #
 # Cariessa Taylor
-# July 26, 2021
-# CSIS 483 Phase 2
+# August 9, 2021
+# CSIS 483 Phase 3
 #
 # This project serves as a platform to retreive the scriptures in
 # various languages and translations. This program can run in two
@@ -57,6 +57,26 @@ class HomePage:
 	        html += "<a href=\"references\\" + line + "\">[" + line + "</a>] "
         html += "</h3>"
         f.close
+        html += "<h2>Concordance</h2>"
+        html += "<form action=\"/concordance\"><h3>"
+        html += "<label for=\"translation\">Translation</label>"
+        html += "<select id=\"translation\" name=\"translation\">"
+        f = open("translations.txt")
+        while(True):
+            line = f.readline()
+            if not line:
+                break
+            lang, abbr, trans = TranslationAction.parseTranslation(line)
+            if abbr == "kjv":
+                html += "<option selected value=\"" + abbr + "\"> " + lang + ":" + trans + "</option>"
+            else:
+                html += "<option value=\"" + abbr + "\"> " + lang + ":" + trans + "</option>"
+        f.close()
+        html += "</select>"
+        html += "<label for=\"search\">Search:</label>"
+        html += "<input type=\"text\" id=\"search\" name=\"search\">"
+        html += "<button type=\"submit\">Search</button>"
+        html += "</h3></form>"
         html += "<hr>"
         html += "<address>Cariessa Taylor<br>July 26, 2021</address>"
         html += "</body>"
@@ -102,13 +122,7 @@ class TranslationAction(argparse.Action):
 	        line = f.readline()
 	        if not line:
 		        break
-	        line = line.strip()
-	        lang = line.split(':')[0].strip()
-	        trans = line.split(':')[1].strip()
-	        left = trans.rindex('(')+1
-	        right = trans.rindex(')')
-	        abbr = trans[left:right]
-	        trans = trans[:left-1].strip()
+	        lang, abbr, trans = TranslationAction.parseTranslation(line)
 	        if lang in transDict:
 	            list = transDict[lang]
 	        else:
@@ -125,6 +139,16 @@ class TranslationAction(argparse.Action):
         yet_another_dict["translations"] = transDict
         json_str = json.dumps(yet_another_dict)
         return json_str
+
+    def parseTranslation(line):
+        line = line.strip()
+        lang = line.split(':')[0].strip()
+        trans = line.split(':')[1].strip()
+        left = trans.rindex('(')+1
+        right = trans.rindex(')')
+        abbr = trans[left:right]
+        trans = trans[:left-1].strip()
+        return lang, abbr, trans
 
     def __call__(self, parser, namespace, values, option_string=None):
         print(TranslationAction.translationsAsJson(values))
@@ -283,6 +307,13 @@ class ServerAction(argparse.Action):
         reflist = []
         reflist.append(reference)
         return ReferenceAction.referencesAsJson(reflist, translation)
+
+    @app.route('/concordance')
+    def concordanceForm():
+        wordlist = []
+        wordlist.append(flask.request.args.get('search'))
+        translation = flask.request.args.get('translation')
+        return ConcordanceAction.concordancesAsJson(wordlist, translation)
 
     @app.route('/concordance/<string:anyWord>')
     def concordance(anyWord):
