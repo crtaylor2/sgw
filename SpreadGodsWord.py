@@ -190,7 +190,6 @@ class ReferenceAction(argparse.Action):
 concord = dict()
 
 class ConcordanceAction(argparse.Action):
-    # TODO: Automated tests
 
     def concordancesAsJson(anyWords, translation):
         ConcordanceAction.buildConcordance(translation)

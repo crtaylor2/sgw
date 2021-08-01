@@ -3,8 +3,8 @@
 ######################################################################
 #
 # Cariessa Taylor
-# July 26, 2021
-# CSIS 483 Phase 2
+# August 9, 2021
+# CSIS 483 Phase 3
 #
 # This bash script is an automated test for the Spread God's Word
 # program. It tests both the command line interface and REST
@@ -82,6 +82,26 @@ else
 fi
 echo ""
 
+# Test Concordance CL
+butter_cli=$(python SpreadGodsWord.py --concordance butter --version kjv)
+if [[ "$butter_cli" =~ .*"2 Samuel17:29".* ]]
+then
+    echo "PASS (command line): found butter in 2 Samuel!"
+else
+    echo "FAIL (command line): didn't find butter in 2 Samuel"
+    exit 1
+fi
+
+red_cli=$(python SpreadGodsWord.py --concordance red --version aov)
+if [[ "$red_cli" =~ .*"2 Kings18:29".* ]]
+then
+    echo "PASS (command line): found red in 2 Kings!"
+else
+    echo "FAIL (command line): didn't find red in 2 Kings"
+    exit 1
+fi
+echo ""
+
 # Start REST Service
 echo "Starting REST server..."
 python SpreadGodsWord.py --server &> /dev/null &
@@ -152,6 +172,26 @@ then
     echo "PASS (rest): found verse for Acts 15:1"
 else
     echo "FAIL (rest): didn't find verse for Acts 15:1"
+    exit 1
+fi
+echo ""
+
+# Test Concordance REST
+butter_cli=$(curl -s http://localhost:5000/concordance/butter/kjv)
+if [[ "$butter_cli" =~ .*"2 Samuel17:29".* ]]
+then
+    echo "PASS (command line): found butter in 2 Samuel!"
+else
+    echo "FAIL (command line): didn't find butter in 2 Samuel"
+    exit 1
+fi
+
+red_cli=$(curl -s http://localhost:5000/concordance/red/aov)
+if [[ "$red_cli" =~ .*"2 Kings18:29".* ]]
+then
+    echo "PASS (command line): found red in 2 Kings!"
+else
+    echo "FAIL (command line): didn't find red in 2 Kings"
     exit 1
 fi
 echo ""
