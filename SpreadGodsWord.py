@@ -78,7 +78,7 @@ class HomePage:
         html += "<button type=\"submit\">Search</button>"
         html += "</h3></form>"
         html += "<hr>"
-        html += "<address>Cariessa Taylor<br>July 26, 2021</address>"
+        html += "<address>Cariessa Taylor<br>August 9, 2021</address>"
         html += "</body>"
         html += "</html>"
         return html
