@@ -191,7 +191,6 @@ concord = dict()
 
 class ConcordanceAction(argparse.Action):
     # TODO: Automated tests
-    # TODO: UI - search box for concordance
 
     def concordancesAsJson(anyWords, translation):
         ConcordanceAction.buildConcordance(translation)
